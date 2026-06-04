@@ -27,7 +27,7 @@ gx_true, gy_true = ndgrid_gradient(p_true, ds, ds)
 
 # --- add noise to the gradient ---
 rng = np.random.default_rng(42)
-var_x, var_y = 1.0, 1.0
+var_x, var_y = 0.001, 0.001
 gx_noisy = gx_true + np.sqrt(var_x) * rng.standard_normal(X.shape)
 gy_noisy = gy_true + np.sqrt(var_y) * rng.standard_normal(X.shape)
 
@@ -43,10 +43,10 @@ print(f"  elapsed: {time.perf_counter() - t0:.3f} s")
 P_unpinned -= P_unpinned[0, 0] - p_true[0, 0]
 
 # --- solve with three pinned interior points ---
-pin_ij = [(25, 50), (100, 100), (150, 75)]
+pin_ij = [(25, 50), (100, 100), (150, 75), (20, 10), (10,15), (20,5), (5, 150), (10,180), (20, 170), (180, 15), (185, 30), (190, 20), (100,50), (120, 80), (150, 150), (50,100), (60, 120)]
 pinned = {ij: float(p_true[ij]) for ij in pin_ij}
 
-print("Solving with 3 pinned interior points …")
+print(f"Solving with {len(pinned)} pinned interior points …")
 t0 = time.perf_counter()
 P_pinned, _, _ = poisson_solver(ds, gx_noisy, gy_noisy, domain_mask,
                                 pinned_points=pinned)
@@ -64,18 +64,21 @@ print(f"\nMAE (unpinned): {err_unpinned.mean():.4f}")
 print(f"MAE (pinned):   {err_pinned.mean():.4f}")
 
 # --- plot ---
+vmin = p_true.min()
+vmax = p_true.max()
+
 fig, axes = plt.subplots(1, 3, figsize=(14, 4))
 
-im0 = axes[0].pcolormesh(X, Y, p_true, shading='auto')
+im0 = axes[0].pcolormesh(X, Y, p_true, shading='auto', vmin=vmin, vmax=vmax)
 axes[0].set_title('True p')
 plt.colorbar(im0, ax=axes[0])
 
-im1 = axes[1].pcolormesh(X, Y, P_unpinned, shading='auto')
+im1 = axes[1].pcolormesh(X, Y, P_unpinned, shading='auto', vmin=vmin, vmax=vmax)
 axes[1].set_title('Reconstructed (no pins)')
 plt.colorbar(im1, ax=axes[1])
 
-im2 = axes[2].pcolormesh(X, Y, P_pinned, shading='auto')
-axes[2].set_title('Reconstructed (3 pins)')
+im2 = axes[2].pcolormesh(X, Y, P_pinned, shading='auto', vmin=vmin, vmax=vmax)
+axes[2].set_title(f'Reconstructed ({len(pinned)} pins)')
 for ij in pin_ij:
     axes[2].plot(x[ij[0]], y[ij[1]], 'r+', markersize=10, markeredgewidth=2)
 plt.colorbar(im2, ax=axes[2])

@@ -1,0 +1,8 @@
+Questions for Zhao:
+1. What RHS is reasonable, i.e. what pressure should our exact solution be?
+2. Does each sensor actually only have an impact on a single point in the domain?
+3. Intuitively do we think that the sensors should be close to the Neumann boundary?
+
+
+Other ideas:
+1. Distributionally robust optimization (chase down reduction of error by hedging against an adversary placing noise on RHS)
